@@ -1,6 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getTenantConfig, getDeptColor } from '@/lib/config'
 
 const Ctx = createContext()
 export const useData = () => useContext(Ctx)
@@ -402,8 +403,10 @@ export function DataProvider({ initialTenant, initialProfile, impersonating, chi
     window.location.href = '/login'
   }, [])
 
+  const cfg = getTenantConfig(tenant)
+
   const value = {
-    tenant, profile, loading, toast, ana, log, signOut, impersonating,
+    tenant, profile, loading, toast, ana, log, signOut, impersonating, cfg,
     emps, leaves, shifts, cycles, reviews, wfs, pols, locs, shiftRules,
     addEmp, updEmp, delEmp, termEmp,
     addLeave, appLeave, denLeave,
