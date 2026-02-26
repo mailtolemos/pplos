@@ -1,18 +1,21 @@
 'use client'
+import { useEffect } from 'react'
 import { useData } from '@/components/data-provider'
 import { useLang } from '@/components/lang-provider'
 import { C, MO, I, Bg, Btn, Stt, DC } from '@/components/ui'
 
 export default function DashboardPage(){
   const{tenant,ana,leaves,log,appLeave,denLeave}=useData()
-  const{t}=useLang()
+  const{t,lang}=useLang()
+  useEffect(() => { document.title = `${tenant.name} — People.OS` }, [tenant.name])
   const deptData=Object.entries(ana.ds).map(([n,c])=>({name:n,count:c,color:DC[n]||C.txD})).sort((a,b)=>b.count-a.count)
   const mx=Math.max(...deptData.map(d=>d.count),1)
   const pending=leaves.filter(l=>l.status==='pending')
+  const loc=lang==='pt'?'pt-PT':lang==='fr'?'fr-FR':lang==='it'?'it-IT':lang==='de'?'de-DE':'en-GB'
   return <div>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:22}}>
-      <div><h1 style={{fontSize:20,fontWeight:700}}>{t('nav.dashboard')}</h1><p style={{fontSize:12,color:C.txD,marginTop:3}}>{tenant.name}</p></div>
-      <span style={{fontFamily:MO,fontSize:10,color:C.txD}}>{new Date().toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}</span>
+      <div><h1 style={{fontSize:20,fontWeight:700}}>{t('dash.welcome')}, {tenant.name}</h1><p style={{fontSize:12,color:C.txD,marginTop:3,fontFamily:MO}}>{tenant.slug}.pplos.io</p></div>
+      <span style={{fontFamily:MO,fontSize:10,color:C.txD}}>{new Date().toLocaleDateString(loc,{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}</span>
     </div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
       <Stt label={t('dash.headcount')} value={ana.total} icon="users"/><Stt label={t('dash.active')} value={ana.active} icon="check"/><Stt label={t('dash.on_leave')} value={ana.onLeave} icon="calendar"/><Stt label={t('dash.pending')} value={ana.pLeaves} icon="bell"/>
@@ -34,7 +37,7 @@ export default function DashboardPage(){
     <div style={{background:C.bgE,border:`1px solid ${C.bd}`,borderRadius:10,padding:18}}>
       <div style={{fontSize:13,fontWeight:600,marginBottom:14}}>{t('dash.activity')}</div>
       {log.length===0?<div style={{textAlign:'center',color:C.txD,fontSize:12,padding:16}}>{t('dash.start')}</div>:
-        log.slice(0,8).map(a=><div key={a.id} style={{display:'flex',alignItems:'center',gap:10,padding:'6px 0',borderBottom:`1px solid ${C.bdS}`,fontSize:12}}><div style={{width:5,height:5,borderRadius:'50%',background:C.cy,flexShrink:0}}/><span style={{flex:1,color:C.txM}}>{a.action}</span><span style={{fontFamily:MO,fontSize:10,color:C.txD}}>{new Date(a.created_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span></div>)}
+        log.slice(0,8).map(a=><div key={a.id} style={{display:'flex',alignItems:'center',gap:10,padding:'6px 0',borderBottom:`1px solid ${C.bdS}`,fontSize:12}}><div style={{width:5,height:5,borderRadius:'50%',background:C.cy,flexShrink:0}}/><span style={{flex:1,color:C.txM}}>{a.action}</span><span style={{fontFamily:MO,fontSize:10,color:C.txD}}>{new Date(a.created_at).toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit'})}</span></div>)}
     </div>
   </div>
 }

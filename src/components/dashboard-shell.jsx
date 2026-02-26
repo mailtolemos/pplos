@@ -75,7 +75,7 @@ export default function DashboardShell({ children }) {
             <div style={{ width: 22, height: 22, borderRadius: 5, background: 'var(--accent-dim)', display: 'grid', placeItems: 'center', fontFamily: MO, fontSize: 9, fontWeight: 800, color: 'var(--accent)' }}>{ini(tenant.name)}</div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 11, fontWeight: 600 }}>{tenant.name}</div>
-              <div style={{ fontSize: 9, color: 'var(--tx-d)' }}>{tenant.plan}</div>
+              <div style={{ fontSize: 9, color: 'var(--tx-d)', fontFamily: MO }}>{tenant.slug}.pplos.io</div>
             </div>
           </div>
         </div>
