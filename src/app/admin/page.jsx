@@ -19,6 +19,7 @@ function I({ n, s = 16, c = 'currentColor' }) {
     sun: <><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/></>,
     moon: <><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></>,
     check: <><polyline points="20 6 9 17 4 12"/></>,
+    login: <><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></>,
   }
   return <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>{paths[n]}</svg>
 }
@@ -31,14 +32,13 @@ export default function AdminPage() {
   const [empCounts, setEmpCounts] = useState({})
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('tenants')
-  const [modal, setModal] = useState(null)
+  const [modal, setModal] = useState(null) // 'create' | { type: 'edit', tenant }
   const [toast, setToast] = useState(null)
   const [submitting, setSubmitting] = useState(false)
-  const [form, setForm] = useState({ name: '', slug: '', plan: 'growth', email: '', password: '', fullName: '' })
+  const [form, setForm] = useState({ name: '', slug: '', plan: 'growth', email: '', password: '', fullName: '', status: 'active' })
 
   const show = useCallback((msg, type = 'success') => { setToast({ msg, type }); setTimeout(() => setToast(null), 3000) }, [])
 
-  // Load via API
   useEffect(() => {
     fetch('/api/admin').then(r => r.json()).then(data => {
       if (data.error) { show(data.error, 'error'); return }
@@ -58,14 +58,16 @@ export default function AdminPage() {
     const { name, slug, plan, email, password, fullName } = form
     if (!name || !slug || !email || !password || !fullName) { show('Fill all fields', 'error'); return }
     setSubmitting(true)
-    const data = await apiPost({ action: 'create', name, slug, plan, email, password, fullName })
-    setSubmitting(false)
-    if (data.error) { show(data.error, 'error'); return }
-    setTenants(p => [data.tenant, ...p])
-    if (data.profile) setProfiles(p => [data.profile, ...p])
-    setModal(null)
-    setForm({ name: '', slug: '', plan: 'growth', email: '', password: '', fullName: '' })
-    show(`${name} created`)
+    try {
+      const data = await apiPost({ action: 'create', name, slug, plan, email, password, fullName })
+      setSubmitting(false)
+      if (data.error) { show(data.error, 'error'); return }
+      setTenants(p => [data.tenant, ...p])
+      if (data.profile) setProfiles(p => [data.profile, ...p])
+      setModal(null)
+      setForm({ name: '', slug: '', plan: 'growth', email: '', password: '', fullName: '', status: 'active' })
+      show(`${name} created`)
+    } catch (e) { setSubmitting(false); show(e.message || 'Failed', 'error') }
   }
 
   async function updateTenant(id, updates) {
@@ -73,6 +75,15 @@ export default function AdminPage() {
     if (data.error) { show(data.error, 'error'); return }
     setTenants(p => p.map(t => t.id === id ? data.tenant : t))
     show('Updated')
+    return data.tenant
+  }
+
+  async function saveTenantEdit() {
+    if (!modal?.tenant) return
+    setSubmitting(true)
+    const t = await updateTenant(modal.tenant.id, { name: form.name, slug: form.slug, plan: form.plan, status: form.status })
+    setSubmitting(false)
+    if (t) setModal(null)
   }
 
   async function deleteTenant(id) {
@@ -82,6 +93,23 @@ export default function AdminPage() {
     setTenants(p => p.filter(t => t.id !== id))
     setProfiles(p => p.filter(pr => pr.tenant_id !== id))
     show('Deleted')
+  }
+
+  async function jumpInto(tenantId) {
+    show('Switching...', 'success')
+    const res = await fetch('/api/admin/impersonate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenantId }),
+    })
+    const data = await res.json()
+    if (data.error) { show(data.error, 'error'); return }
+    window.location.href = '/dashboard'
+  }
+
+  function openEdit(t) {
+    setForm({ name: t.name, slug: t.slug, plan: t.plan, status: t.status || 'active', email: '', password: '', fullName: '' })
+    setModal({ type: 'edit', tenant: t })
   }
 
   const stats = useMemo(() => ({
@@ -161,7 +189,7 @@ export default function AdminPage() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h1 style={{ fontSize: 20, fontWeight: 700 }}>Companies</h1>
-              <button onClick={() => setModal('create')} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: MO, fontSize: 12, fontWeight: 600, padding: '8px 16px', borderRadius: 7, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer' }}>
+              <button onClick={() => { setForm({ name: '', slug: '', plan: 'growth', email: '', password: '', fullName: '', status: 'active' }); setModal('create') }} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontFamily: MO, fontSize: 12, fontWeight: 600, padding: '8px 16px', borderRadius: 7, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer' }}>
                 <I n="plus" s={14} c="#fff" /> New Company
               </button>
             </div>
@@ -178,25 +206,30 @@ export default function AdminPage() {
                       <td style={{ padding: '10px 14px', fontWeight: 500 }}>{t.name}</td>
                       <td style={{ padding: '10px 14px', fontFamily: MO, fontSize: 11, color: 'var(--accent)' }}>{t.slug}</td>
                       <td style={{ padding: '10px 14px' }}>
-                        <select value={t.plan} onChange={e => updateTenant(t.id, { plan: e.target.value })} style={{ background: 'var(--bg-c)', border: '1px solid var(--bd)', borderRadius: 5, color: 'var(--tx)', fontSize: 11, padding: '2px 6px', fontFamily: MO, cursor: 'pointer' }}>
-                          <option value="starter">starter</option><option value="growth">growth</option><option value="enterprise">enterprise</option>
-                        </select>
+                        <span style={{ fontFamily: MO, fontSize: 10, fontWeight: 600, padding: '3px 9px', borderRadius: 5, background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--accent-border)' }}>{t.plan}</span>
                       </td>
                       <td style={{ padding: '10px 14px' }}>
-                        <select value={t.status || 'active'} onChange={e => updateTenant(t.id, { status: e.target.value })} style={{
+                        <span style={{
+                          fontFamily: MO, fontSize: 10, fontWeight: 600, padding: '3px 9px', borderRadius: 5,
                           background: t.status === 'active' ? 'rgba(52,211,153,0.1)' : 'rgba(251,191,36,0.08)',
+                          color: t.status === 'active' ? 'var(--gn)' : 'var(--am)',
                           border: `1px solid ${t.status === 'active' ? 'rgba(52,211,153,0.18)' : 'rgba(251,191,36,0.18)'}`,
-                          borderRadius: 5, color: t.status === 'active' ? 'var(--gn)' : 'var(--am)', fontSize: 11, padding: '2px 6px', fontFamily: MO, cursor: 'pointer',
-                        }}>
-                          <option value="active">active</option><option value="trial">trial</option><option value="suspended">suspended</option><option value="churned">churned</option>
-                        </select>
+                        }}>{t.status || 'active'}</span>
                       </td>
                       <td style={{ padding: '10px 14px', fontFamily: MO, fontWeight: 600 }}>{empCounts[t.id] || 0}</td>
                       <td style={{ padding: '10px 14px', fontSize: 11, color: 'var(--tx-d)', fontFamily: MO }}>{new Date(t.created_at).toLocaleDateString('en-GB')}</td>
                       <td style={{ padding: '10px 14px' }}>
-                        <button onClick={() => deleteTenant(t.id)} style={{ background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.18)', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--rs)', fontFamily: MO }}>
-                          <I n="trash" s={11} c="var(--rs)" /> Del
-                        </button>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          <button onClick={() => jumpInto(t.id)} title="Jump into dashboard" style={{ background: 'var(--accent-dim)', border: '1px solid var(--accent-border)', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--accent)', fontFamily: MO, fontWeight: 600 }}>
+                            <I n="login" s={11} c="var(--accent)" /> Enter
+                          </button>
+                          <button onClick={() => openEdit(t)} style={{ background: 'rgba(128,128,128,0.06)', border: '1px solid var(--bd)', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--tx-m)', fontFamily: MO }}>
+                            <I n="edit" s={11} c="var(--tx-d)" /> Edit
+                          </button>
+                          <button onClick={() => deleteTenant(t.id)} style={{ background: 'rgba(251,113,133,0.08)', border: '1px solid rgba(251,113,133,0.18)', borderRadius: 5, padding: '3px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--rs)', fontFamily: MO }}>
+                            <I n="trash" s={11} c="var(--rs)" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -237,6 +270,7 @@ export default function AdminPage() {
         )}
       </main>
 
+      {/* ─── Create Modal ─── */}
       {modal === 'create' && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }} onClick={() => setModal(null)}>
           <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-c)', border: '1px solid var(--bd)', borderRadius: 14, width: 480, maxWidth: '92vw', padding: 24 }}>
@@ -280,12 +314,65 @@ export default function AdminPage() {
                   <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Min 6 chars" style={input} />
                 </div>
               </div>
-              {form.name && <div style={{ fontSize: 11, fontFamily: MO, color: 'var(--tx-d)' }}>Workspace: <span style={{ color: 'var(--accent)' }}>{form.slug}.peopleos.io</span></div>}
+              {form.name && <div style={{ fontSize: 11, fontFamily: MO, color: 'var(--tx-d)' }}>Workspace: <span style={{ color: 'var(--accent)' }}>{form.slug}.pplos.io</span></div>}
               <button onClick={createTenant} disabled={submitting} style={{
                 padding: '11px', borderRadius: 7, border: 'none', background: 'var(--accent)', color: '#fff',
                 fontSize: 13, fontWeight: 600, cursor: submitting ? 'wait' : 'pointer', fontFamily: MO, marginTop: 4,
                 opacity: submitting ? 0.6 : 1,
               }}>{submitting ? 'Creating...' : 'Create Company & Admin 🚀'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Edit Modal ─── */}
+      {modal?.type === 'edit' && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'grid', placeItems: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }} onClick={() => setModal(null)}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg-c)', border: '1px solid var(--bd)', borderRadius: 14, width: 460, maxWidth: '92vw', padding: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700 }}>Edit Company</h3>
+              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', color: 'var(--tx-d)', cursor: 'pointer' }}><I n="x" s={16} /></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 11, color: 'var(--tx-d)', fontWeight: 500 }}>Company Name</label>
+                <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} style={input} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <label style={{ fontSize: 11, color: 'var(--tx-d)', fontWeight: 500 }}>Slug</label>
+                <input value={form.slug} onChange={e => setForm({ ...form, slug: e.target.value })} style={{ ...input, fontFamily: MO }} />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, color: 'var(--tx-d)', fontWeight: 500 }}>Plan</label>
+                  <select value={form.plan} onChange={e => setForm({ ...form, plan: e.target.value })} style={input}>
+                    <option value="starter">Starter</option>
+                    <option value="growth">Growth</option>
+                    <option value="enterprise">Enterprise</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <label style={{ fontSize: 11, color: 'var(--tx-d)', fontWeight: 500 }}>Status</label>
+                  <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} style={input}>
+                    <option value="active">Active</option>
+                    <option value="trial">Trial</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="churned">Churned</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ fontSize: 11, fontFamily: MO, color: 'var(--tx-d)' }}>Workspace: <span style={{ color: 'var(--accent)' }}>{form.slug}.pplos.io</span></div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={saveTenantEdit} disabled={submitting} style={{
+                  flex: 1, padding: '11px', borderRadius: 7, border: 'none', background: 'var(--accent)', color: '#fff',
+                  fontSize: 13, fontWeight: 600, cursor: submitting ? 'wait' : 'pointer', fontFamily: MO, opacity: submitting ? 0.6 : 1,
+                }}>{submitting ? 'Saving...' : 'Save Changes'}</button>
+                <button onClick={() => jumpInto(modal.tenant.id)} style={{
+                  padding: '11px 18px', borderRadius: 7, border: '1px solid var(--accent-border)', background: 'var(--accent-dim)',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: MO, color: 'var(--accent)',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}><I n="login" s={14} c="var(--accent)" /> Enter</button>
+              </div>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 const Ctx = createContext()
 export const useData = () => useContext(Ctx)
 
-export function DataProvider({ initialTenant, initialProfile, children }) {
+export function DataProvider({ initialTenant, initialProfile, impersonating, children }) {
   const supabase = createClient()
   const tid = initialTenant.id
   const [tenant, setTenant] = useState(initialTenant)
@@ -403,7 +403,7 @@ export function DataProvider({ initialTenant, initialProfile, children }) {
   }, [])
 
   const value = {
-    tenant, profile, loading, toast, ana, log, signOut,
+    tenant, profile, loading, toast, ana, log, signOut, impersonating,
     emps, leaves, shifts, cycles, reviews, wfs, pols, locs, shiftRules,
     addEmp, updEmp, delEmp, termEmp,
     addLeave, appLeave, denLeave,

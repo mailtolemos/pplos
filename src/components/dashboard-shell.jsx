@@ -37,7 +37,7 @@ function useTypewriter(words) {
 }
 
 export default function DashboardShell({ children }) {
-  const { tenant, profile, toast, ana, signOut, loading } = useData()
+  const { tenant, profile, toast, ana, signOut, loading, impersonating } = useData()
   const { t, lang, setLang } = useLang()
   const { theme, toggleTheme } = useTheme()
   const pathname = usePathname()
@@ -155,6 +155,19 @@ export default function DashboardShell({ children }) {
             {tenant.slug}.peopleos.io
           </div>
         </header>
+        {impersonating && (
+          <div style={{ background: 'rgba(251,191,36,0.12)', borderBottom: '1px solid rgba(251,191,36,0.25)', padding: '8px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--am)' }}>
+              <I n="shield" s={13} c="var(--am)" /> Viewing as <strong>{tenant.name}</strong>
+            </span>
+            <button onClick={async () => {
+              await fetch('/api/admin/impersonate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exit: true }) })
+              window.location.href = '/admin'
+            }} style={{ fontFamily: MO, fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 5, border: '1px solid rgba(251,191,36,0.3)', background: 'rgba(251,191,36,0.08)', color: 'var(--am)', cursor: 'pointer' }}>
+              ← Exit to Admin
+            </button>
+          </div>
+        )}
         <div style={{ flex: 1, overflow: 'auto', padding: 24 }}>{children}</div>
       </main>
       <Toast toast={toast} />
