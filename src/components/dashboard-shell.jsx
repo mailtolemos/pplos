@@ -45,7 +45,7 @@ export default function DashboardShell({ children }) {
   const mods = tenant.enabled_modules || []
   const items = NAV.filter(it => !it.mod || mods.includes(it.mod))
   const currentLang = LANGS.find(l => l.code === lang)
-  const brandText = useTypewriter(['People.OS', 'pplos.io'])
+  const brandText = useTypewriter(['People Operating System', 'pplos.io'])
 
   if (loading) return (
     <div style={{ display: 'flex', height: '100vh', background: 'var(--bg)', color: 'var(--tx)', fontFamily: SA, alignItems: 'center', justifyContent: 'center' }}>
@@ -65,7 +65,7 @@ export default function DashboardShell({ children }) {
           {/* Brand with typewriter */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <img src="/logo.png" alt="People.OS" style={{ height: 20, objectFit: 'contain' }} />
-            <span style={{ fontFamily: MO, fontSize: 13, fontWeight: 700, color: 'var(--accent)', minWidth: 90 }}>
+            <span style={{ fontFamily: MO, fontSize: 11, fontWeight: 700, color: 'var(--accent)', minWidth: 90 }}>
               {brandText}<span className="typewriter-cursor" style={{ height: '0.9em' }} />
             </span>
           </div>
@@ -113,7 +113,7 @@ export default function DashboardShell({ children }) {
             transition: 'background 0.2s',
           }}>
             <I n={theme === 'dark' ? 'sun' : 'moon'} s={13} c="var(--tx-d)" />
-            <span style={{ flex: 1, textAlign: 'left' }}>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            <span style={{ flex: 1, textAlign: 'left' }}>{theme === 'dark' ? t('theme.light') : t('theme.dark')}</span>
           </button>
           {/* Language selector */}
           <div style={{ position: 'relative', marginBottom: 6 }}>

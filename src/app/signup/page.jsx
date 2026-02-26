@@ -35,7 +35,7 @@ export default function SignupPage() {
   const router = useRouter()
   const { t, lang, setLang } = useLang()
   const { theme, toggleTheme } = useTheme()
-  const brandText = useTypewriter(['People.OS', 'pplos.io'])
+  const brandText = useTypewriter(['People Operating System', 'pplos.io'])
 
   useEffect(() => { setTimeout(() => setMounted(true), 100) }, [])
 
@@ -96,7 +96,7 @@ export default function SignupPage() {
         {/* Brand header */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
           <img src="/logo.png" alt="People.OS" style={{ height: 40, marginBottom: 16, objectFit: 'contain' }} />
-          <div style={{ fontFamily: MO, fontSize: 28, fontWeight: 700, color: 'var(--accent)', minHeight: 40 }}>
+          <div style={{ fontFamily: MO, fontSize: 22, fontWeight: 700, color: 'var(--accent)', minHeight: 36 }}>
             {brandText}<span className="typewriter-cursor" />
           </div>
           <p style={{ fontSize: 13, color: 'var(--tx-d)', marginTop: 10 }}>{t('auth.create_hr')}</p>
