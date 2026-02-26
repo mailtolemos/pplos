@@ -1,8 +1,52 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#08080a;color:#ededef;font-family:'Instrument Sans',-apple-system,sans-serif}
+
+/* ─── Default: Dark Mode ─── */
+:root {
+  --bg: #08080a;
+  --bg-s: #0f0f12;
+  --bg-e: #131316;
+  --bg-c: #19191d;
+  --bd: #252529;
+  --bd-s: #1c1c20;
+  --tx: #ededef;
+  --tx-m: #9898a0;
+  --tx-d: #636369;
+  --accent: #b4a0f4;
+  --accent-dim: rgba(180,160,244,0.08);
+  --accent-border: rgba(180,160,244,0.18);
+  --gn: #34d399;
+  --am: #fbbf24;
+  --rs: #fb7185;
+}
+
+/* ─── Light Mode ─── */
+[data-theme="light"] {
+  --bg: #f6f5f3;
+  --bg-s: #eeecea;
+  --bg-e: #ffffff;
+  --bg-c: #f0efed;
+  --bd: #ddd9d4;
+  --bd-s: #e5e2de;
+  --tx: #1a1a2e;
+  --tx-m: #5a5a6e;
+  --tx-d: #8a8a98;
+  --accent: #7c5cbf;
+  --accent-dim: rgba(124,92,191,0.08);
+  --accent-border: rgba(124,92,191,0.18);
+  --gn: #059669;
+  --am: #d97706;
+  --rs: #e11d48;
+}
+
+body{background:var(--bg);color:var(--tx);font-family:'Instrument Sans',-apple-system,sans-serif;transition:background 0.3s ease,color 0.3s ease}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:#252529;border-radius:3px}
-select option{background:#19191d;color:#ededef}
-input:-webkit-autofill{-webkit-box-shadow:0 0 0 30px #131316 inset !important;-webkit-text-fill-color:#ededef !important}
+::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+select option{background:var(--bg-c);color:var(--tx)}
+input:-webkit-autofill{-webkit-box-shadow:0 0 0 30px var(--bg-e) inset !important;-webkit-text-fill-color:var(--tx) !important}
+
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.typewriter-cursor{display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;animation:blink 0.8s step-end infinite;vertical-align:text-bottom}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}

@@ -1,16 +1,20 @@
 import './globals.css'
 import { LangProvider } from '@/components/lang-provider'
+import { ThemeProvider } from '@/components/theme-provider'
 
 export const metadata = {
-  title: 'pplos.io:// — Modern HR Platform',
+  title: 'People.OS — Modern HR Platform',
   description: 'Multi-tenant HRIS for modern teams',
+  icons: { icon: '/logo.png' },
 }
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark">
       <body>
-        <LangProvider>{children}</LangProvider>
+        <ThemeProvider>
+          <LangProvider>{children}</LangProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
