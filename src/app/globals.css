@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#08080a;color:#ededef;font-family:'Instrument Sans',-apple-system,sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#252529;border-radius:3px}
+select option{background:#19191d;color:#ededef}
+input:-webkit-autofill{-webkit-box-shadow:0 0 0 30px #131316 inset !important;-webkit-text-fill-color:#ededef !important}
