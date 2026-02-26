@@ -47,7 +47,7 @@ const translations = {
   'theme.dark': { en:'Dark Mode', fr:'Mode sombre', pt:'Modo escuro', it:'Modalità scura', de:'Dunkler Modus' },
 
   // ─── Dashboard ───
-  'dash.welcome': { en:'Welcome back', fr:'Bon retour', pt:'Bem-vindo de volta', it:'Bentornato', de:'Willkommen zurück' },
+  'dash.welcome': { en:'Welcome back', fr:'Bon retour', pt:'Olá de novo', it:'Bentornato/a', de:'Willkommen zurück' },
   'dash.headcount': { en:'Headcount', fr:'Effectifs', pt:'Efetivo', it:'Organico', de:'Mitarbeiterzahl' },
   'dash.active': { en:'Active', fr:'Actifs', pt:'Ativos', it:'Attivi', de:'Aktiv' },
   'dash.on_leave': { en:'On Leave', fr:'En congé', pt:'De licença', it:'In ferie', de:'Im Urlaub' },
