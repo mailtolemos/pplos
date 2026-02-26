@@ -152,7 +152,7 @@ export default function DashboardShell({ children }) {
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '10px 24px', borderBottom: '1px solid var(--bd-s)', flexShrink: 0, background: 'var(--bg-s)', transition: 'background 0.3s' }}>
           <div style={{ fontFamily: MO, fontSize: 10, color: 'var(--tx-d)', padding: '4px 8px', background: 'var(--bg-c)', borderRadius: 5, border: '1px solid var(--bd-s)' }}>
-            {tenant.slug}.peopleos.io
+            {tenant.slug}.pplos.io
           </div>
         </header>
         {impersonating && (

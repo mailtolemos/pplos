@@ -128,7 +128,7 @@ export default function SignupPage() {
             </div>
             {company && (
               <div style={{ fontSize: 11, fontFamily: MO, color: 'var(--tx-d)' }}>
-                {t('auth.your_workspace')}: <span style={{ color: 'var(--accent)' }}>{company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '')}.peopleos.io</span>
+                {t('auth.your_workspace')}: <span style={{ color: 'var(--accent)' }}>{company.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '')}.pplos.io</span>
               </div>
             )}
             <button type="button" onClick={() => fullName && company && setStep(2)} disabled={!fullName || !company} style={{
