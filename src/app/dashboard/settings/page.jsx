@@ -101,7 +101,7 @@ export default function SettingsPage() {
   const c = localCfg || cfg
 
   const startEdit = () => { if (!localCfg) setLocalCfg({ ...cfg }) }
-  const updateCfg = (key, val) => { startEdit(); setLocalCfg(p => ({ ...(p || cfg), [key]: val })) }
+  const updateCfg = (key, val) => { setLocalCfg(p => ({ ...(p || cfg), ...(typeof key === 'string' ? { [key]: val } : key) })) }
   const hasChanges = localCfg !== null
 
   const saveConfig = async () => {
@@ -149,7 +149,7 @@ export default function SettingsPage() {
             <div><div style={{ fontSize: 13, fontWeight: 600 }}>Departments</div><div style={{ fontSize: 10, color: C.txD, marginTop: 2 }}>Organize employees by department</div></div>
             <Bg v="dim">{c.departments.length}</Bg>
           </div>
-          <DeptEditor departments={c.departments} colors={c.department_colors} onChange={(d, cl) => { updateCfg('departments', d); updateCfg('department_colors', cl) }} />
+          <DeptEditor departments={c.departments} colors={c.department_colors} onChange={(d, cl) => updateCfg({ departments: d, department_colors: cl })} />
         </div>
 
         {/* Leave Types */}
