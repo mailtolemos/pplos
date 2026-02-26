@@ -5,7 +5,7 @@ import { useLang } from '@/components/lang-provider'
 import { C, MO, I, Bg, Btn, Stt, DC } from '@/components/ui'
 
 export default function DashboardPage(){
-  const{tenant,ana,leaves,log,appLeave,denLeave}=useData()
+  const{tenant,profile,ana,leaves,log,appLeave,denLeave}=useData()
   const{t,lang}=useLang()
   useEffect(() => { document.title = `${tenant.name} — People.OS` }, [tenant.name])
   const deptData=Object.entries(ana.ds).map(([n,c])=>({name:n,count:c,color:DC[n]||C.txD})).sort((a,b)=>b.count-a.count)
@@ -14,7 +14,7 @@ export default function DashboardPage(){
   const loc=lang==='pt'?'pt-PT':lang==='fr'?'fr-FR':lang==='it'?'it-IT':lang==='de'?'de-DE':'en-GB'
   return <div>
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:22}}>
-      <div><h1 style={{fontSize:20,fontWeight:700}}>{t('dash.welcome')}, {tenant.name}</h1><p style={{fontSize:12,color:C.txD,marginTop:3,fontFamily:MO}}>{tenant.slug}.pplos.io</p></div>
+      <div><h1 style={{fontSize:20,fontWeight:700}}>{t('dash.welcome')}, {profile.full_name || tenant.name}</h1><p style={{fontSize:12,color:C.txD,marginTop:3,fontFamily:MO}}>{tenant.name} · {tenant.slug}.pplos.io</p></div>
       <span style={{fontFamily:MO,fontSize:10,color:C.txD}}>{new Date().toLocaleDateString(loc,{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}</span>
     </div>
     <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:12,marginBottom:22}}>
