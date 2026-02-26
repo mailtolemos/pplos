@@ -10,6 +10,7 @@ import { C, MO, SA, I, Av, ini, Toast } from '@/components/ui'
 const NAV = [
   { id: '/dashboard', k: 'nav.dashboard', i: 'home' },
   { id: '/dashboard/employees', k: 'nav.employees', i: 'users' },
+  { id: '/dashboard/locations', k: 'nav.locations', i: 'mapPin' },
   { id: '/dashboard/scheduling', k: 'nav.scheduling', i: 'clock', mod: 'shifts' },
   { id: '/dashboard/leave', k: 'nav.leave', i: 'calendar', mod: 'leave' },
   { id: '/dashboard/analytics', k: 'nav.analytics', i: 'chart', mod: 'analytics' },
@@ -65,7 +66,7 @@ export default function DashboardShell({ children }) {
           {/* Brand with typewriter */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
             <img src="/logo.png" alt="People.OS" style={{ height: 20, objectFit: 'contain' }} />
-            <span style={{ fontFamily: MO, fontSize: 11, fontWeight: 700, color: 'var(--accent)', minWidth: 90 }}>
+            <span style={{ fontFamily: MO, fontSize: 9, fontWeight: 700, color: 'var(--accent)', minWidth: 90, whiteSpace: 'nowrap' }}>
               {brandText}<span className="typewriter-cursor" style={{ height: '0.9em' }} />
             </span>
           </div>
