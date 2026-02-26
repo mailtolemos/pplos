@@ -54,6 +54,9 @@ export async function POST(request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
   const body = await request.json()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not configured in Vercel env vars' }, { status: 500 })
+  }
   const sb = adminClient()
 
   // ─── Create Tenant + Admin ───
@@ -63,37 +66,37 @@ export async function POST(request) {
       return NextResponse.json({ error: 'All fields required' }, { status: 400 })
     }
 
-    // Create tenant
-    const { data: tenant, error: tErr } = await sb.from('tenants')
-      .insert({ name, slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ''), plan })
-      .select().single()
-    if (tErr) return NextResponse.json({ error: tErr.message }, { status: 400 })
+    try {
+      // Create tenant
+      const { data: tenant, error: tErr } = await sb.from('tenants')
+        .insert({ name, slug: slug.toLowerCase().replace(/[^a-z0-9-]/g, ''), plan })
+        .select().single()
+      if (tErr) return NextResponse.json({ error: 'Tenant: ' + tErr.message }, { status: 400 })
 
-    // Create auth user (service role can do this)
-    const { data: authData, error: aErr } = await sb.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-    })
-    if (aErr) {
-      // Rollback tenant
-      await sb.from('tenants').delete().eq('id', tenant.id)
-      return NextResponse.json({ error: aErr.message }, { status: 400 })
+      // Create auth user (service role can do this)
+      const { data: authData, error: aErr } = await sb.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+      })
+      if (aErr) {
+        await sb.from('tenants').delete().eq('id', tenant.id)
+        return NextResponse.json({ error: 'Auth: ' + aErr.message }, { status: 400 })
+      }
+
+      // Create profile
+      const { error: pErr } = await sb.from('profiles')
+        .insert({ id: authData.user.id, tenant_id: tenant.id, full_name: fullName, role: 'admin' })
+      if (pErr) {
+        await sb.from('tenants').delete().eq('id', tenant.id)
+        await sb.auth.admin.deleteUser(authData.user.id)
+        return NextResponse.json({ error: 'Profile: ' + pErr.message }, { status: 400 })
+      }
+
+      return NextResponse.json({ tenant, profile: { id: authData.user.id, tenant_id: tenant.id, full_name: fullName, role: 'admin' } })
+    } catch (err) {
+      return NextResponse.json({ error: 'Server: ' + (err.message || 'Unknown error') }, { status: 500 })
     }
-
-    // Create profile
-    const { error: pErr } = await sb.from('profiles')
-      .insert({ id: authData.user.id, tenant_id: tenant.id, full_name: fullName, role: 'admin' })
-    if (pErr) {
-      await sb.from('tenants').delete().eq('id', tenant.id)
-      await sb.auth.admin.deleteUser(authData.user.id)
-      return NextResponse.json({ error: pErr.message }, { status: 400 })
-    }
-
-    // Seed data
-    await sb.rpc('seed_tenant_data', { p_tenant_id: tenant.id }).catch(() => {})
-
-    return NextResponse.json({ tenant, profile: { id: authData.user.id, tenant_id: tenant.id, full_name: fullName, role: 'admin' } })
   }
 
   // ─── Update Tenant ───
